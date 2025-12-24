@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Crop Yield Prediction</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f8f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: #2e7d32;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2e7d32;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 16px;
+    }
+
+    button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      margin-top: 25px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background: #256428;
+    }
+
+    .result {
+      margin-top: 25px;
+      padding: 15px;
+      background: #e8f5e9;
+      border-left: 5px solid #2e7d32;
+      display: none;
+    }
+
+    .error {
+      background: #ffebee;
+      border-left: 5px solid #c62828;
+      color: #c62828;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 14px;
+      color: gray;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>🌾 AI Crop Yield Prediction</h1>
+  <p>Maharashtra Farmers | Image + Soil + Weather AI</p>
+</header>
+
+<div class="container">
+
+  <h2>Enter Crop Details</h2>
+
+  <label>Crop Image</label>
+  <input type="file" id="image" accept="image/*">
+
+  <label>Crop Type</label>
+  <select id="crop">
+    <option value="Rice">Rice</option>
+    <option value="Wheat">Wheat</option>
+    <option value="Cotton">Cotton</option>
+    <option value="Soybean">Soybean</option>
+    <option value="Maize">Maize</option>
+  </select>
+
+  <label>Soil Type</label>
+  <select id="soil">
+    <option value="Black">Black Soil</option>
+    <option value="Red">Red Soil</option>
+    <option value="Alluvial">Alluvial Soil</option>
+  </select>
+
+  <button onclick="startPrediction()">Predict Yield</button>
+
+  <div id="result" class="result"></div>
+
+</div>
+
+<footer>
+  © 2025 AI Crop Yield Prediction | Built with AI 🌱
+</footer>
+
+<script>
+function startPrediction() {
+  if (!document.getElementById("image").files[0]) {
+    alert("Please upload a crop image");
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    position => sendData(position.coords.latitude, position.coords.longitude),
+    () => alert("Location permission is required")
+  );
+}
+
+async function sendData(lat, lon) {
+  const resultDiv = document.getElementById("result");
+  resultDiv.style.display = "block";
+  resultDiv.className = "result";
+  resultDiv.innerHTML = "⏳ Predicting...";
+
+  const formData = new FormData();
+  formData.append("image", document.getElementById("image").files[0]);
+  formData.append("soil", document.getElementById("soil").value);
+  formData.append("lat", lat);
+  formData.append("lon", lon);
+
+  try {
+    const response = await fetch("http://127.0.0.1:5000/predict", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.error) {
+      resultDiv.className = "result error";
+      resultDiv.innerHTML = data.error;
+      return;
+    }
+
+    resultDiv.className = "result";
+    resultDiv.innerHTML = `
+      <b>📍 State:</b> ${data.state}<br><br>
+      🌡️ <b>Temperature:</b> ${data.temperature} °C<br>
+      🌧️ <b>Rainfall:</b> ${data.rainfall} mm<br>
+      🌱 <b>Crop Health:</b> ${data.health_score} %<br>
+      🌾 <b>Predicted Yield:</b> ${data.predicted_yield} ${data.unit}
+    `;
+  } catch (err) {
+    resultDiv.className = "result error";
+    resultDiv.innerHTML = "Server not reachable. Is backend running?";
+  }
+}
+</script>
+
+</body>
+</html>
