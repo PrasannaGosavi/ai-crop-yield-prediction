@@ -53,7 +53,7 @@ def is_maharashtra(lat, lon):
 # Weather API
 # ----------------------------
 def get_weather(lat, lon):
-    API_KEY = "34cf5764a210e2860e26ef85bdd384"
+    API_KEY = "Enter Your API Key here"
 
     url = (
         f"https://api.openweathermap.org/data/2.5/weather"
